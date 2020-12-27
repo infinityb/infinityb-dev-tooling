@@ -1,0 +1,10 @@
+#!/bin/bash
+set -x
+
+SCRIPT_BASE=$(cd -- "$(dirname -- "$0")"; pwd)
+
+package_path=$(nix-build ./build.nix)
+package_name=$("${package_path}/bin/inspircd" --version | tail -1)
+nix copy --no-check-sigs --to "${SCRIPT_BASE}/__cache__" "${package_path}"
+mksquashfs "${SCRIPT_BASE}/__cache__" "${SCRIPT_BASE}/${package_name}.squashfs" -comp xz -all-root -no-exports -no-sparse -no-xattrs
+
