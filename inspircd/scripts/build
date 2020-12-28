@@ -1,10 +1,25 @@
 #!/bin/bash
 set -x
+set -e
 
-SCRIPT_BASE=$(cd -- "$(dirname -- "$0")"; pwd)
+export PATH="${PATH}:/sbin"
+data_block_bytes=4096
+SCRIPT_BASE=$(cd -- "$(dirname -- "$0")/.."; pwd)
 
 package_path=$(nix-build ./build.nix)
 package_name=$("${package_path}/bin/inspircd" --version | tail -1)
-nix copy --no-check-sigs --to "${SCRIPT_BASE}/__cache__" "${package_path}"
-mksquashfs "${SCRIPT_BASE}/__cache__" "${SCRIPT_BASE}/${package_name}.squashfs" -comp xz -all-root -no-exports -no-sparse -no-xattrs
+test -e "${SCRIPT_BASE}/__cache__" && rm -rf "${SCRIPT_BASE}/__cache__"
 
+nix copy --no-check-sigs --to "${SCRIPT_BASE}/__cache__" "${package_path}" "/nix/store/7g6ar24krh7vn66gvfwwv3nq9xsh5c6i-coreutils-8.31"
+ln -s "${package_path}/bin/inspircd" "${SCRIPT_BASE}/__cache__/nix/entrypoint"
+
+squash_file="${SCRIPT_BASE}/${package_name}.squashfs"
+squash_file_verity="${squash_file}-verity"
+unlink "${squash_file}" || true
+mksquashfs "${SCRIPT_BASE}/__cache__/nix" "${squash_file}" -comp xz -all-root -no-exports -no-sparse -no-xattrs
+chmod u+w -R  "${SCRIPT_BASE}/__cache__"
+
+data_length=$(stat --format="%s" "${squash_file}")
+cp "${squash_file}" "${squash_file_verity}"
+veritysetup format --data-block-size=${data_block_bytes} --data-blocks=$(( (${data_length} + ${data_block_bytes} - 1) / ${data_block_bytes} )) \
+    --hash-offset=${data_length} "${squash_file_verity}" "${squash_file_verity}"
