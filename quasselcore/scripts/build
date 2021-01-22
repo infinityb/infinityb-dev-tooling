@@ -1,19 +1,21 @@
 #!/bin/bash
 set -x
 set -e
+set -o pipefail
 
 export PATH="${PATH}:/sbin"
 data_block_bytes=4096
 SCRIPT_BASE=$(cd -- "$(dirname -- "$0")/.."; pwd)
 
-package_path=$(nix-build ./build.nix)
-package_name=$("${package_path}/bin/inspircd" --version | tail -1)
+package_path=$(nix eval --raw nixpkgs.quasselDaemon.outPath)
+package_name=$("${package_path}/bin/quasselcore" --version |
+  sed -n 's/^quassel \(v[0-9]\+.[0-9]\+.[0-9]\+\)[ (].*$/quassel_\1/p')
+
 test -e "${SCRIPT_BASE}/__cache__" && rm -rf "${SCRIPT_BASE}/__cache__"
 
 nix copy --no-check-sigs --to "${SCRIPT_BASE}/__cache__" "${package_path}" \
-    "$(nix eval --raw nixpkgs.coreutils.outPath)"
-
-ln -s "${package_path}/bin/inspircd" "${SCRIPT_BASE}/__cache__/nix/entrypoint"
+  "$(nix eval --raw nixpkgs.coreutils.outPath)"
+ln -s "${package_path}/bin/quasselcore" "${SCRIPT_BASE}/__cache__/nix/entrypoint"
 
 squash_file="${SCRIPT_BASE}/${package_name}.squashfs"
 squash_file_verity="${squash_file}-verity"
@@ -35,7 +37,7 @@ jq -aMn \
     --arg root_hash "${root_hash}" \
     --arg image_sha256 "${image_sha256}" \
     '{
-        package_name: "org.yshi.x-unofficial.org.inspircd",
+        package_name: "org.yshi.x-unofficial.org.quassel-irc",
         data_length: $data_length|tonumber,
         dm_verity_root_hash: $root_hash,
         image_sha256: $image_sha256,

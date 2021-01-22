@@ -1,0 +1,26 @@
+#!/bin/bash
+set -xe
+
+if test "$1" = "--inner"
+then
+	package_name="org.inspircd"
+	persist_dir="/var/lib/yscloud/org.yasashiisyndicate.irc.demo/${package_name}"
+	mount_dir="/var/lib/yscloud/org.yasashiisyndicate.irc.demo/mounts"
+	rootfs_path="${mount_dir}/${package_name}"
+
+	mkdir -p ${rootfs_path} ${persist_dir} || true
+	mount -o noexec,nosuid,nodev,size=320k -t tmpfs tmpfs ${rootfs_path}
+	mkdir -p ${rootfs_path}/{.old,nix,persist,ephemeral} || true
+
+	mount /home/sell/infinityb-dev-tools/inspircd/InspIRCd-3.8.1.squashfs-verity ${rootfs_path}/nix
+	mount -o noexec,nosuid,nodev,size=300000k -t tmpfs tmpfs ${rootfs_path}/ephemeral
+	mount -o noexec,nosuid,nodev --bind ${persist_dir} ${rootfs_path}/persist
+
+	cd ${rootfs_path}
+	pivot_root . ./.old
+	exec /nix/store/7g6ar24krh7vn66gvfwwv3nq9xsh5c6i-coreutils-8.31/bin/chroot . /.old/home/sell/sleep
+	exit 0
+fi
+
+exec unshare -m --propagation=private -- $0 --inner
+# unshare -m --propagation=private bash -l
