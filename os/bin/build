@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# nix-build -A config.system.build.squashfsStore \
+#   '<nixpkgs/nixos/default.nix>' \
+#   --arg configuration ./iso.nix
+
+nix-build -A config.system.build.isoImage \
+  '<nixpkgs/nixos/default.nix>' \
+  --arg configuration ./iso.nix \
+  --out-link result
