@@ -2,8 +2,8 @@
   "enabled": 1,
   "hidden": false,
   "description": "yscloud CI",
-  "nixexprinput": "pulls",
-  "nixexprpath": "ci.nix",
+  "nixexprinput": "configs",
+  "nixexprpath": "yscloud-ci/default.nix",
   "checkinterval": 600,
   "schedulingshares": 100,
   "enableemail": false,
@@ -11,6 +11,7 @@
   "keepnr": 10,
   "inputs":{
     "nixpkgs": { "type": "git", "value": "https://github.com/nixos/nixpkgs-channels nixos-unstable", "emailresponsible": false },
+    "configs": { "type": "git", "value": "https://github.com/infinityb/infinityb-dev-tools master", "emailresponsible": false },
     "pulls": { "type": "githubpulls", "value": "infinityb yscloud", "emailresponsible": false }
   }
 }
