@@ -1,6 +1,7 @@
 {
   "enabled": 1,
   "hidden": false,
+  "projectName": "yscloud2",
   "description": "yscloud CI",
   "nixexprinput": "configs",
   "nixexprpath": "yscloud-ci/default.nix",
