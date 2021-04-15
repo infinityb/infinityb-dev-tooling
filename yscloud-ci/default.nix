@@ -21,7 +21,7 @@ let
       description = "yscloud";
       inputs = {
         yscloud = mkFetchGithub "https://github.com/infinityb/yscloud master";
-        nixpkgs = mkFetchGithub "https://github.com/nixos/nixpkgs-channels.git nixos-unstable-small";
+        nixpkgs = mkFetchGithub "https://github.com/nixos/nixpkgs.git nixos-unstable";
       };
     };
   };
@@ -32,7 +32,7 @@ let
       description = "PR ${num}: ${info.title}";
       inputs = {
         yscloud = mkFetchGithub "https://github.com/${info.head.repo.owner.login}/${info.head.repo.name}.git ${info.head.ref}";
-        nixpkgs = mkFetchGithub "https://github.com/nixos/nixpkgs-channels.git nixos-unstable";
+        nixpkgs = mkFetchGithub "https://github.com/nixos/nixpkgs.git nixos-unstable";
       };
     };
   };
